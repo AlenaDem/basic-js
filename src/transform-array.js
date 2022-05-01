@@ -18,53 +18,45 @@ function transform(arr) {
     if (!Array.isArray(arr)) {
       throw e;
     }
-    let result = arr;
-    for (let i = 0; i < result.length; i++) {
-      if (result[i] === '--discard-next') {
-        if (result[i+2] === '--discard-prev' || result[i+2] === '--double-prev') {
-          result.splice(i+2, 1);
-        }
-        if (i > result.length) {
-          result.splice(i, 1);
-        }
-        else {
-          result.splice(i, 2);
-        }
-        
-        if (i > 0) {
-          i--;
+
+    let flags = Array(arr.length);
+    flags.fill(1);
+    for (let i = 0; i < arr.length; i++) {
+      
+      if (arr[i] === '--discard-next') {
+        flags[i] = 0;
+        if (i < arr.length - 1) {
+          flags[i+1] = 0;
         }
       }
-      if (result[i] === '--discard-prev') {
-        if (i > 0) {
-          result.splice(i-1, 2);
-          if (i > 1) {
-            i--;
-          }
-          i--;
-        }
-        else {
-          result.splice(i, 1);
-          i--;
-        }
-        
-      }
-      if (result[i] === '--double-next') {
-        if (i < result.length-1) {
-          result[i] = result[i+1];
-        }
-        else {
-          result.splice(i, 1);
+
+      else if (arr[i] === '--discard-prev') {
+        flags[i] = 0;
+        if (i > 0 && flags[i-1] > 0) {
+          flags[i-1]--;
         }
       }
-      if (result[i] === '--double-prev') {
-        if (i > 0) {
-          result[i] = result[i-1];
-        }
-        else {
-          result.splice(i, 1);
+
+      else if (arr[i] === '--double-next') {
+        flags[i] = 0;
+        if (i < arr.length - 1) {
+          flags[i+1]++;
         }
       }
+
+      else if (arr[i] === '--double-prev') {
+        flags[i] = 0;
+        if (i > 0 && flags[i-1] > 0) {
+          flags[i-1]++;
+        }
+      }
+    }
+
+    let result = [];
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < flags[i]; j++) {
+          result.push(arr[i]);
+        }
     }
     return result;
   }
